@@ -9,12 +9,12 @@ class ManageCyclesController extends \Jazzee\AdminController {
   const MENU = 'Manage';
   const TITLE = 'Cycles';
   const PATH = 'manage/cycles';
-  
+
   const ACTION_INDEX = 'View Cycles';
   const ACTION_EDIT = 'New Cycle';
   const ACTION_NEW = 'Edit Cycle';
   const REQUIRE_APPLICATION = false;
-  
+
   /**
    * Add the required JS
    */
@@ -22,19 +22,19 @@ class ManageCyclesController extends \Jazzee\AdminController {
     parent::setUp();
     $this->addScript($this->path('resource/scripts/controllers/manage_cycles.controller.js'));
   }
-  
+
   /**
    * List cycles
    */
   public function actionIndex(){
     $this->setVar('cycles', $this->_em->getRepository('\Jazzee\Entity\Cycle')->findAll());
   }
-  
+
   /**
    * Edit a cycle
    * @param integer $cycleID
    */
-   public function actionEdit($cycleID){ 
+   public function actionEdit($cycleID){
     if($cycle = $this->_em->getRepository('\Jazzee\Entity\Cycle')->find($cycleID)){
       $form = new \Foundation\Form;
       $form->setCSRFToken($this->getCSRFToken());
@@ -47,18 +47,18 @@ class ManageCyclesController extends \Jazzee\AdminController {
       $element->addFilter(new \Foundation\Form\Filter\UrlSafe($element));
       $element->addFilter(new \Foundation\Form\Filter\Safe($element));
       $element->setValue($cycle->getName());
-      
+
       $element = $field->newElement('DateInput','start');
       $element->setLabel('Start Date');
       $element->addValidator(new \Foundation\Form\Validator\DateBeforeElement($element, 'end'));
       $element->addValidator(new \Foundation\Form\Validator\NotEmpty($element));
       $element->setValue($cycle->getStart()->format('m/d/Y'));
-      
+
       $element = $field->newElement('DateInput','end');
       $element->setLabel('End Date');
       $element->addValidator(new \Foundation\Form\Validator\NotEmpty($element));
       $element->setValue($cycle->getEnd()->format('m/d/Y'));
-      
+
       $element = $field->newElement('CheckboxList','requiredPages');
       $element->setLabel('Required Pages');
       $globalPages = array();
@@ -72,12 +72,13 @@ class ManageCyclesController extends \Jazzee\AdminController {
       }
       $element->setValue($values);
       $form->newButton('submit', 'Save Changes');
-      $this->setVar('form', $form);  
+      $this->setVar('form', $form);
       if($input = $form->processInput($this->post)){
         if($input->get('name') != $cycle->getName() and count($this->_em->getRepository('\Jazzee\Entity\Cycle')->findBy(array('name' => $input->get('name'))))){
           $this->addMessage('error', "A cycle with that name already exists");
         } else {
           $cycle->setName($input->get('name'));
+          $cycle->clearDates();
           $cycle->setStart($input->get('start'));
           $cycle->setEnd($input->get('end'));
           foreach($cycle->getRequiredPages() as $page){
@@ -97,7 +98,7 @@ class ManageCyclesController extends \Jazzee\AdminController {
       $this->addMessage('error', "Error: Cycle #{$cycleID} does not exist.");
     }
   }
-   
+
   /**
    * Create a new cycle
    */
@@ -112,18 +113,18 @@ class ManageCyclesController extends \Jazzee\AdminController {
     $element->addValidator(new \Foundation\Form\Validator\NotEmpty($element));
     $element->addFilter(new \Foundation\Form\Filter\UrlSafe($element));
     $element->addFilter(new \Foundation\Form\Filter\Safe($element));
-    
+
     $element = $field->newElement('DateInput','start');
     $element->setLabel('Start Date');
     $element->addValidator(new \Foundation\Form\Validator\DateBeforeElement($element, 'end'));
     $element->addValidator(new \Foundation\Form\Validator\NotEmpty($element));
-    
+
     $element = $field->newElement('DateInput','end');
     $element->setLabel('End Date');
     $element->addValidator(new \Foundation\Form\Validator\NotEmpty($element));
 
     $form->newButton('submit', 'Save Changes');
-    $this->setVar('form', $form);  
+    $this->setVar('form', $form);
     if($input = $form->processInput($this->post)){
       if(count($this->_em->getRepository('\Jazzee\Entity\Cycle')->findBy(array('name' => $input->get('name'))))){
         $this->addMessage('error', "A cycle with that name already exists");

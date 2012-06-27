@@ -1,47 +1,47 @@
 <?php
 namespace Jazzee\Entity;
 
-/** 
+/**
  * Cycle
  * Applications are divided into cycles which represent a single admission period
  * @Entity(repositoryClass="\Jazzee\Entity\CycleRepository")
- * @Table(name="cycles", 
+ * @Table(name="cycles",
  * uniqueConstraints={@UniqueConstraint(name="cycle_name_unique",columns={"name"})})
  * @package    jazzee
  * @subpackage orm
  */
 class Cycle{
   /**
-    * @Id 
+    * @Id
     * @Column(type="integer")
     * @GeneratedValue(strategy="AUTO")
   */
   private $id;
-  
+
   /** @Column(type="string", length=32) */
   private $name;
-  
+
   /** @Column(type="datetime", nullable=true) */
   private $start;
-  
+
   /** @Column(type="datetime", nullable=true) */
   private $end;
-  
-  /** 
+
+  /**
    * @OneToMany(targetEntity="Application", mappedBy="cycle")
    */
   protected $applications;
-  
+
   /**
    * @ManyToMany(targetEntity="Page")
   **/
   private $requiredPages;
-  
+
   public function __construct(){
     $this->requiredPages = new \Doctrine\Common\Collections\ArrayCollection();
     $this->applications = new \Doctrine\Common\Collections\ArrayCollection();
   }
-  
+
   /**
    * Get the id
    * @return integer
@@ -49,7 +49,7 @@ class Cycle{
   public function getId(){
     return $this->id;
   }
-  
+
   /**
    * Get the name
    * @return string
@@ -65,7 +65,7 @@ class Cycle{
   public function getStart(){
     return $this->start;
   }
-  
+
   /**
    * Get the end date
    * @return DateTime
@@ -73,7 +73,7 @@ class Cycle{
   public function getEnd(){
     return $this->end;
   }
-  
+
   /**
    * Set the name
    * @param string $name
@@ -91,7 +91,7 @@ class Cycle{
     if($this->end and $start > $this->end) throw new \Jazzee\Exception('Cycle start date must be before end date.');
     $this->start = $start;
   }
-  
+
   /**
    * Set the end date
    * @param string $dateTime
@@ -101,10 +101,19 @@ class Cycle{
     if($this->start and $end < $this->start) throw new \Jazzee\Exception('Cycle end date must be after start date.');
     $this->end = $end;
   }
-  
+
+  /**
+   * Clear the Cycle start and end dates
+   * This will allow them to be reset without testing
+   */
+  public function clearDates(){
+    $this->start = null;
+    $this->end = null;
+  }
+
   /**
    * Add a required page
-   * @param Page $page 
+   * @param Page $page
    */
   public function addRequiredPage(Page $page){
     if(!$page->isGlobal()){
@@ -112,7 +121,7 @@ class Cycle{
     }
     $this->requiredPages[] = $page;
   }
-  
+
   /**
    * Get the required pages for a cycle
    * @return array Page
@@ -120,7 +129,7 @@ class Cycle{
   public function getRequiredPages(){
     return $this->requiredPages;
   }
-  
+
   public function hasRequiredPage(Page $page){
     if(count($this->requiredPages) == 0){
       return false;
@@ -141,10 +150,10 @@ class Cycle{
  * @subpackage orm
  */
 class CycleRepository extends \Doctrine\ORM\EntityRepository{
-  
+
   /**
    * find best current cycle
-   * 
+   *
    * If a user doesn't have a cycle we need to search for an find the best current cycle for them
    * If there is a program then use that, otherwise just get the most recent cycle
    * @param Program $program
