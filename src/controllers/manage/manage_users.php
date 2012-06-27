@@ -10,7 +10,7 @@ class ManageUsersController extends \Jazzee\AdminController {
   const MENU = 'Manage';
   const TITLE = 'Users';
   const PATH = 'manage/users';
-  
+
   const ACTION_INDEX = 'Find User';
   const ACTION_EDIT = 'Edit User';
   const ACTION_REMOVE = 'Remove User';
@@ -18,7 +18,7 @@ class ManageUsersController extends \Jazzee\AdminController {
   const ACTION_RESETAPIKEY = 'Reset API Key';
   const ACTION_NEW = 'New User';
   const REQUIRE_APPLICATION = false;
-  
+
   /**
    * Search for a user to modify
    */
@@ -34,7 +34,7 @@ class ManageUsersController extends \Jazzee\AdminController {
 
     $element = $field->newElement('TextInput','lastName');
     $element->setLabel('Last Name');
-    
+
     $form->newButton('submit', 'Search');
     $results = array();  //array of all the users who match the search
     if($input = $form->processInput($this->post)) $results = $directory->search($input->get('firstName'), $input->get('lastName'));
@@ -43,19 +43,19 @@ class ManageUsersController extends \Jazzee\AdminController {
     $this->setVar('roles', $this->_em->getRepository('\Jazzee\Entity\Role')->findByIsGlobal(true));
     $this->setVar('form', $form);
   }
-  
+
   /**
    * Edit a user
    * @param integer $userID
    */
-   public function actionEdit($userID){ 
+   public function actionEdit($userID){
     if($user = $this->_em->getRepository('\Jazzee\Entity\User')->find($userID)){
       $form = new \Foundation\Form();
       $form->setCSRFToken($this->getCSRFToken());
       $form->setAction($this->path("manage/users/edit/{$userID}"));
       $field = $form->newField();
       $field->setLegend('Edit ' . $user->getFirstName() . ' ' . $user->getLastName());
-      
+
       $element = $field->newElement('CheckboxList','roles');
       $element->setLabel('Global Roles');
       foreach($this->_em->getRepository('\Jazzee\Entity\Role')->findByIsGlobal(true) as $role){
@@ -67,17 +67,19 @@ class ManageUsersController extends \Jazzee\AdminController {
       }
       $element->setValue($values);
       $form->newButton('submit', 'Save Changes');
-      $this->setVar('form', $form);  
+      $this->setVar('form', $form);
       if($input = $form->processInput($this->post)){
         //clear out all current global roles
-        foreach($user->getRoles() as $role)if($role->isGlobal()) $user->getRoles()->removeElement($role);            
+        foreach($user->getRoles() as $role)if($role->isGlobal()) $user->getRoles()->removeElement($role);
         
-        foreach($input->get('roles') as $roleID){
-          $role = $this->_em->getRepository('\Jazzee\Entity\Role')->find($roleID);
-          $user->addRole($role);
+        if($input->get('roles')){
+          foreach ($input->get('roles') as $roleID) {
+            $role = $this->_em->getRepository('\Jazzee\Entity\Role')->find($roleID);
+            $user->addRole($role);
+          }
         }
         $this->_em->persist($user);
-        
+
         $this->addMessage('success', "Changes Saved Successfully");
         $this->redirectPath('manage/users');
       }
@@ -85,12 +87,12 @@ class ManageUsersController extends \Jazzee\AdminController {
       $this->addMessage('error', "Error: User #{$userID} does not exist.");
     }
   }
-  
+
   /**
    * Remove a user
    * @param integer $userID
    */
-   public function actionRemove($userID){ 
+   public function actionRemove($userID){
     if($user = $this->_em->getRepository('\Jazzee\Entity\User')->find($userID)){
       $user->deactivate();
       $this->_em->persist($user);
@@ -100,13 +102,13 @@ class ManageUsersController extends \Jazzee\AdminController {
       $this->addMessage('error', "Error: User #{$userID} does not exist.");
     }
   }
-  
+
   /**
    * Refresh a user
    * Query the directory and refresh a users information
    * @param integer $userID
    */
-  public function actionRefreshUser($userID){ 
+  public function actionRefreshUser($userID){
     if($user = $this->_em->getRepository('\Jazzee\Entity\User')->find($userID)){
       $directory = $this->getAdminDirectory();
       $result = $directory->findByUniqueName($user->getUniqueName());
@@ -124,13 +126,13 @@ class ManageUsersController extends \Jazzee\AdminController {
       $this->addMessage('error', "Error: User #{$userID} does not exist.");
     }
   }
-  
+
   /**
    * Setup API Key
    * View and reset a users API Key
    * @param integer $userID
    */
-  public function actionResetApiKey($userID){ 
+  public function actionResetApiKey($userID){
     if($user = $this->_em->getRepository('\Jazzee\Entity\User')->find($userID)){
       $user->generateApiKey();
       $this->_em->persist($user);
@@ -140,7 +142,7 @@ class ManageUsersController extends \Jazzee\AdminController {
       $this->addMessage('error', "Error: User #{$userID} does not exist.");
     }
   }
-  
+
   /**
    * Add a user
    * Add new user
