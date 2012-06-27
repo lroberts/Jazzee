@@ -1,7 +1,7 @@
 <?php
 /**
  * Jazzee Bootstrap
- * 
+ *
  * Load all of the Views, Controllers, and Elements
  * @package jazzee
  */
@@ -57,4 +57,3 @@ if (!class_exists('Composer\\Autoload\\ClassLoader', false)) {
 \Jazzee\AdminController::addControllerPath(__DIR__ . '/controllers/scores');
 \Jazzee\AdminController::addControllerPath(__DIR__ . '/controllers/applicants');
 \Jazzee\AdminController::addControllerPath(__DIR__ . '/controllers/admin');
-?>
