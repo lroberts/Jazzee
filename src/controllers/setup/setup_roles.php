@@ -9,12 +9,12 @@ class SetupRolesController extends \Jazzee\AdminController {
   const MENU = 'Setup';
   const TITLE = 'Program Roles';
   const PATH = 'setup/roles';
-  
+
   const ACTION_INDEX = 'View';
   const ACTION_EDIT = 'Edit';
   const ACTION_COPY = 'Copy';
   const ACTION_NEW = 'New';
-  
+
   /**
    * Add the required JS
    */
@@ -22,19 +22,19 @@ class SetupRolesController extends \Jazzee\AdminController {
     parent::setUp();
     $this->addScript($this->path('resource/scripts/controllers/setup_roles.controller.js'));
   }
-  
+
   /**
    * List all the Roles
    */
   public function actionIndex(){
     $this->setVar('roles', $this->_em->getRepository('\Jazzee\Entity\Role')->findByProgram($this->_program->getId()));
   }
-  
+
   /**
    * Edit a role
    * @param integer $roleID
    */
-   public function actionEdit($roleID){ 
+   public function actionEdit($roleID){
     if($role = $this->_em->getRepository('\Jazzee\Entity\Role')->findOneBy(array('id' => $roleID, 'program'=>$this->_program->getId()))){
       $form = new \Foundation\Form;
       $form->setCSRFToken($this->getCSRFToken());
@@ -73,19 +73,17 @@ class SetupRolesController extends \Jazzee\AdminController {
           $this->_em->remove($action);
           $role->getActions()->removeElement($action);
         }
-        
+
         foreach($menus as $menu => $list){
           foreach($list as $controller){
             $actions = $input->get($controller['name']);
             if(!empty($actions)){
               foreach($actions as $actionName){
-                if($this->checkIsAllowed($controller['name'], $actionName)){
-                  $action = new \Jazzee\Entity\RoleAction;
-                  $action->setController($controller['name']);
-                  $action->setAction($actionName);
-                  $action->setRole($role);
-                  $this->_em->persist($action);
-                }
+                $action = new \Jazzee\Entity\RoleAction;
+                $action->setController($controller['name']);
+                $action->setAction($actionName);
+                $action->setRole($role);
+                $this->_em->persist($action);
               }
             }
           }
@@ -99,12 +97,12 @@ class SetupRolesController extends \Jazzee\AdminController {
       $this->addMessage('error', "Error: Role #{$roleID} does not exist.");
     }
   }
-  
+
   /**
    * Copy a role
    * @param integer $oldRoleID
    */
-   public function actionCopy($oldRoleID){ 
+   public function actionCopy($oldRoleID){
     if($oldRole = $this->_em->getRepository('\Jazzee\Entity\Role')->findOneBy(array('id' => $oldRoleID, 'program'=>$this->_program->getId()))){
       $form = new \Foundation\Form;
       $form->setCSRFToken($this->getCSRFToken());
@@ -162,7 +160,7 @@ class SetupRolesController extends \Jazzee\AdminController {
       $this->addMessage('error', "Error: Role #{$oldRoleID} does not exist.");
     }
   }
-   
+
   /**
    * Create a new pagetype
    */
@@ -178,7 +176,7 @@ class SetupRolesController extends \Jazzee\AdminController {
     $element->addFilter(new \Foundation\Form\Filter\Safe($element));
 
     $form->newButton('submit', 'Add Role');
-    $this->setVar('form', $form); 
+    $this->setVar('form', $form);
     if($input = $form->processInput($this->post)){
       $role = new \Jazzee\Entity\Role();
       $role->notGLobal();
@@ -189,10 +187,10 @@ class SetupRolesController extends \Jazzee\AdminController {
       $this->redirectPath('setup/roles');
     }
   }
-  
+
   /**
    * Get All of the possible controllers and actions
-   * 
+   *
    * only allow the ones the user has access to
    * @return array of ControllerAuths
    */
