@@ -2,25 +2,25 @@
 namespace Jazzee;
 /**
  * PageBuilder
- * 
+ *
  * The page builder abstracts common functionality between application pages and global pages
  * @package jazzee
  * @subpackage admin
  */
 abstract class PageBuilder extends AdminController{
-  
+
   /**
    * Add the required JS
    */
   public function setUp(){
     //everything is displayed over json
     $this->layout = 'json';
-    
+
     $this->addScript($this->path('resource/foundation/scripts/form.js'));
     $this->addScript($this->path('resource/foundation/scripts/jquery.wysiwyg.js'));
-    
+
     $this->addCss($this->path('resource/foundation/styles/jquery.wysiwyg.css'));
-    
+
     $types = $this->_em->getRepository('\Jazzee\Entity\PageType')->findAll();
     $scripts = array();
     $scripts[] = $this->path('resource/scripts/page_types/JazzeePage.js');
@@ -30,9 +30,9 @@ abstract class PageBuilder extends AdminController{
     }
     $scripts = array_unique($scripts);
     foreach($scripts as $path) $this->addScript($path);
-    
+
     $this->addScript($this->path('resource/scripts/element_types/JazzeeElement.js'));
-    
+
     $types = $this->_em->getRepository('\Jazzee\Entity\ElementType')->findAll();
     $scripts = array();
     $scripts[] = $this->path(\Jazzee\Interfaces\Element::PAGEBUILDER_SCRIPT);
@@ -44,35 +44,35 @@ abstract class PageBuilder extends AdminController{
     }
     $scripts = array_unique($scripts);
     foreach($scripts as $path) $this->addScript($path);
-    
+
     $this->addScript($this->path('resource/scripts/classes/PageBuilder.class.js'));
     $this->addCss($this->path('resource/styles/pages.css'));
 
     if(!class_exists('HTMLPurifier')){
       throw new \Foundation\Exception('HTML Purifier is required for building pages and it is not available.');
     }
-    
+
   }
-  
+
   /**
    * Return a list of all the current pages
    */
   abstract public function actionListPages();
-  
+
   /**
    * Take the input from a save page requires
-   * 
+   *
    * @param integer $pageId
    */
   abstract public function actionSavePage($pageId);
-  
+
   /**
    * Javascript does the display work unless there is no application
    */
   public function actionIndex(){
     $this->layout = 'wide';
   }
-  
+
   /**
    * Create an array from a page suitable for json_encoding
    * @param \Jazzee\Entity\Page of \Jazzee\Entity\ApplicationPage $page
@@ -89,7 +89,7 @@ abstract class PageBuilder extends AdminController{
       'leadingText' => $page->getLeadingText(),
       'trailingText' => $page->getTrailingText()
     );
-    
+
     //now that we have completed the general setup replace $applicationPage with $page
     if($page instanceof \Jazzee\Entity\ApplicationPage){
       $arr['weight'] = $page->getWeight();
@@ -109,7 +109,7 @@ abstract class PageBuilder extends AdminController{
           'trailingText' => $page->getTrailingText()
         );
       }
-    } 
+    }
     $arr['id'] = $page->getId();
     $arr['uuid'] = $page->getUuid();
     $arr['typeClass'] = $this->getClassName($page->getType()->getClass());
@@ -123,6 +123,7 @@ abstract class PageBuilder extends AdminController{
     foreach($page->getElements() as $element){
       $e = array(
         'id' => $element->getId(),
+        'fixedId' => $element->getFixedId(),
         'weight' => $element->getWeight(),
         'title' => $element->getTitle(),
         'format' => $element->getFormat(),
@@ -159,7 +160,7 @@ abstract class PageBuilder extends AdminController{
     }
     return $arr;
   }
-  
+
   /**
    * List the available page types
    */
@@ -208,7 +209,7 @@ abstract class PageBuilder extends AdminController{
     $this->setVar('result', $arr);
     $this->loadView($this->controllerName . '/result');
   }
-  
+
   /**
    * List the available payment types
    */
@@ -231,14 +232,14 @@ abstract class PageBuilder extends AdminController{
     $this->setVar('result', $arr);
     $this->loadView($this->controllerName . '/result');
   }
-  
+
   /**
    * Save a page
    * @param \Jazzee\Entity\Page $page
    */
   public function savePage($page, $data){
     $htmlPurifier = $this->getFilter();
-    
+
     $page->setTitle($htmlPurifier->purify($data->title));
     $page->setMin(empty($data->min)?null:$data->min);
     $page->setMax(empty($data->max)?null:$data->max);
@@ -247,9 +248,9 @@ abstract class PageBuilder extends AdminController{
     $page->setInstructions(empty($data->instructions)?null:$htmlPurifier->purify($data->instructions));
     $page->setLeadingText(empty($data->leadingText)?null:$htmlPurifier->purify($data->leadingText));
     $page->setTrailingText(empty($data->trailingText)?null:$htmlPurifier->purify($data->trailingText));
-    
+
     $this->_em->persist($page);
-    
+
     if($page instanceof \Jazzee\Entity\ApplicationPage){
       $page->setWeight($data->weight);
       //if this is a global page then we are done
@@ -299,7 +300,7 @@ abstract class PageBuilder extends AdminController{
     }
     $this->addMessage('success',$page->getTitle() . ' page saved.');
   }
-  
+
   /**
    * Update all of the elements on a page with an array of elements passed in
    * @param \Jazzee\Entity\Page $page
@@ -322,9 +323,10 @@ abstract class PageBuilder extends AdminController{
           }
           break;
         case 'new':
-            $element = new \Jazzee\Entity\Element();
-            $page->addElement($element);
-            $element->setType($this->_em->getRepository('\Jazzee\Entity\ElementType')->find($e->typeId));
+          $element = new \Jazzee\Entity\Element();
+          $page->addElement($element);
+          $element->setType($this->_em->getRepository('\Jazzee\Entity\ElementType')->find($e->typeId));
+          $element->setFixedId(empty($e->fixedId) ? null : $e->fixedId);
         default:
           if(!isset($element)) $element = $page->getElementByID($e->id);
           $element->setWeight($e->weight);
@@ -353,7 +355,7 @@ abstract class PageBuilder extends AdminController{
 
   /**
    * Preview a page
-   * 
+   *
    * We use a fake page to construct a preview
    */
   public function actionPreviewPage(){
@@ -376,7 +378,7 @@ abstract class PageBuilder extends AdminController{
     $this->setVar('page', $ap);
     $this->setVar('applicant', $applicant);
   }
-  
+
   /**
    * Create a generic page to use in a preview
    * @param \Jazzee\Entity\Page $page
@@ -407,7 +409,7 @@ abstract class PageBuilder extends AdminController{
     $page->setInstructions(empty($data->instructions)?null:$data->instructions);
     $page->setLeadingText(empty($data->leadingText)?null:$data->leadingText);
     $page->setTrailingText(empty($data->trailingText)?null:$data->trailingText);
-    
+
     foreach($data->variables as $v){
       $page->setVar($v->name, $v->value);
     }
@@ -423,7 +425,7 @@ abstract class PageBuilder extends AdminController{
     }
     $this->_em->clear();
   }
-  
+
   /**
    * Crate a generic element to use in previewing a page
    * @param \Jazzee\Entity\Element $element that we are workign with
@@ -448,25 +450,25 @@ abstract class PageBuilder extends AdminController{
       if($item->isActive()) $item->activate(); else $item->deActivate();
     }
   }
-  
+
   /**
    * De-namespace a class name
-   * 
+   *
    * replace the slashes in namespaced class names with dashes
    * @param string $class
    */
   protected function getClassName($class){
     return str_replace('\\', '', $class);
   }
-  
+
   /**
    * Fake get action path so \Jazzee\Interfaces\Pages have somethign to call
-   * 
+   *
    */
   public function getActionPath(){
     return $this->path('');
   }
-  
+
   protected function getFilter(){
     $cachePath = $this->getVarPath() . '/tmp/htmlpurifiercache';
     if (!is_dir($cachePath)) {
