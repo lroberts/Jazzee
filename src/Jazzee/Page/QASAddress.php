@@ -3,17 +3,17 @@ namespace Jazzee\Page;
 require_once __DIR__ . '/../../../lib/qas/qaddress.inc';
 /**
  * QAS Address Verification
- * 
+ *
  * @author Jon Johnson <jon.johnson@ucsf.edu>
  * @license http://jazzee.org/license.txt
  * @package jazzee
  * @subpackage pages
  */
-class QASAddress extends Standard 
+class QASAddress extends Standard
 {
-  
+
   /**
-   * Element Fixed IDs 
+   * Element Fixed IDs
    */
   const FID_ADDRESS1 = 2;
   const FID_ADDRESS2 = 4;
@@ -22,9 +22,9 @@ class QASAddress extends Standard
   const FID_STATE = 10;
   const FID_COUNTRY = 12;
   const FID_POSTALCODE = 14;
-  
+
   /**
-   * 
+   *
    * Enter description here ...
    */
   protected function makeForm(){
@@ -35,29 +35,29 @@ class QASAddress extends Standard
     $field = $form->newField();
     $field->setLegend($this->_applicationPage->getTitle());
     $field->setInstructions($this->_applicationPage->getInstructions());
-    
+
     $element = $field->newElement('TextInput','address3');
     $element->setLabel('company name, department, c/o, etc');
-    
+
     $element = $field->newElement('TextInput','address1');
     $element->setLabel('Address 1');
     $element->addValidator(new \Foundation\Form\Validator\NotEmpty($element));
-    
+
     $element = $field->newElement('TextInput','address2');
     $element->setLabel('Address 2');
-    
+
     $element = $field->newElement('TextInput','city');
     $element->setLabel('City');
     $element->addValidator(new \Foundation\Form\Validator\NotEmpty($element));
-    
+
     $element = $field->newElement('TextInput','state');
     $element->setLabel('State');
-    
+
     $element = $field->newElement('TextInput','postalCode');
     $element->setLabel('ZIP or Postal Code');
     $element->setFormat('');
     $element->addValidator(new \Foundation\Form\Validator\MaximumLength($element, 60));
-    
+
     $element = $field->newElement('SelectList','country');
     $element->setLabel('Country');
     $countries = array('USA' => "United States", 'AFG' => "Afghanistan", 'ALA' => "Aland Islands", 'ALB' => "Albania", 'DZA' => "Algeria", 'ASM' => "American Samoa", 'AND' => "Andorra", 'AGO' => "Angola", 'AIA' => "Anguilla", 'ATA' => "Antarctica", 'ATG' => "Antigua And Barbuda", 'ARG' => "Argentina", 'ARM' => "Armenia", 'ABW' => "Aruba", 'AUS' => "Australia", 'AUT' => "Austria", 'AZE' => "Azerbaijan", 'BHS' => "Bahamas", 'BHR' => "Bahrain", 'BGD' => "Bangladesh", 'BRB' => "Barbados", 'BLR' => "Belarus", 'BEL' => "Belgium", 'BLZ' => "Belize", 'BEN' => "Benin", 'BMU' => "Bermuda", 'BTN' => "Bhutan", 'BOL' => "Bolivia", 'BIH' => "Bosnia And Herzegowina", 'BWA' => "Botswana", 'BVT' => "Bouvet Island", 'BRA' => "Brazil", 'IOT' => "British Indian Ocean Territory", 'BRN' => "Brunei Darussalam", 'BGR' => "Bulgaria", 'BFA' => "Burkina Faso", 'BDI' => "Burundi", 'KHM' => "Cambodia", 'CMR' => "Cameroon", 'CAN' => "Canada", 'CPV' => "Cape Verde", 'CYM' => "Cayman Islands", 'CAF' => "Central African Republic", 'TCD' => "Chad", 'CHL' => "Chile", 'CHN' => "China", 'CXR' => "Christmas Island", 'CCK' => "Cocos (Keeling) Islands", 'COL' => "Colombia", 'COM' => "Comoros", 'COG' => "Congo", 'COD' => "Congo, The Democratic Republic Of The", 'COK' => "Cook Islands", 'CRI' => "Costa Rica", 'CIV' => "Cote D'Ivoire", 'HRV' => "Croatia (Local Name: Hrvatska)", 'CUB' => "Cuba", 'CYP' => "Cyprus", 'CZE' => "Czech Republic", 'DNK' => "Denmark", 'DJI' => "Djibouti", 'DMA' => "Dominica", 'DOM' => "Dominican Republic", 'ECU' => "Ecuador", 'EGY' => "Egypt", 'SLV' => "El Salvador", 'GNQ' => "Equatorial Guinea", 'ERI' => "Eritrea", 'EST' => "Estonia", 'ETH' => "Ethiopia", 'FLK' => "Falkland Islands (Malvinas)", 'FRO' => "Faroe Islands", 'FJI' => "Fiji", 'FIN' => "Finland", 'FRP' => "France", 'GUF' => "French Guiana", 'PYF' => "French Polynesia", 'ATF' => "French Southern Territories", 'GAB' => "Gabon", 'GMB' => "Gambia", 'GEO' => "Georgia", 'DEU' => "Germany", 'GHA' => "Ghana", 'GIB' => "Gibraltar", 'GRC' => "Greece", 'GRL' => "Greenland", 'GRD' => "Grenada", 'GLP' => "Guadeloupe", 'GUM' => "Guam", 'GTM' => "Guatemala", 'GIN' => "Guinea", 'GNB' => "Guinea-Bissau", 'GUY' => "Guyana", 'HTI' => "Haiti", 'HMD' => "Heard And McDonald Islands", 'VAT' => "Holy See (Vatican City State)", 'HND' => "Honduras", 'HKG' => "Hong Kong", 'HUN' => "Hungary", 'ISL' => "Iceland", 'IND' => "India", 'IDN' => "Indonesia", 'IRN' => "Iran (Islamic Republic Of)", 'IRQ' => "Iraq", 'IRL' => "Ireland", 'ISR' => "Israel", 'ITA' => "Italy", 'JAM' => "Jamaica", 'JPN' => "Japan", 'JOR' => "Jordan", 'KAZ' => "Kazakhstan", 'KEN' => "Kenya", 'KIR' => "Kiribati", 'PRK' => "Korea, Democratic People's Republic Of", 'KOR' => "Korea, Republic Of", 'KWT' => "Kuwait", 'KGZ' => "Kyrgyzstan", 'LAO' => "Lao People's Democratic Republic", 'LVA' => "Latvia", 'LBN' => "Lebanon", 'LSO' => "Lesotho", 'LBR' => "Liberia", 'LBY' => "Libyan Arab Jamahiriya", 'LIE' => "Liechtenstein", 'LTU' => "Lithuania", 'LUX' => "Luxembourg", 'MAC' => "Macau", 'MKD' => "Macedonia, The Former Yugoslav Republic Of", 'MDG' => "Madagascar", 'MWI' => "Malawi", 'MYS' => "Malaysia", 'MDV' => "Maldives", 'MLI' => "Mali", 'MLT' => "Malta", 'MHL' => "Marshall Islands", 'MTQ' => "Martinique", 'MRT' => "Mauritania", 'MUS' => "Mauritius", 'MYT' => "Mayotte", 'MEX' => "Mexico", 'FSM' => "Micronesia, Federated States Of", 'MDA' => "Moldova, Republic Of", 'MCO' => "Monaco", 'MNE' => "Montenegro", 'MNG' => "Mongolia", 'MSR' => "Montserrat", 'MAR' => "Morocco", 'MOZ' => "Mozambique", 'MMR' => "Myanmar", 'NAM' => "Namibia", 'NRU' => "Nauru", 'NPL' => "Nepal", 'NLD' => "Netherlands, The", 'ANT' => "Netherlands Antilles", 'NCL' => "New Caledonia", 'NZL' => "New Zealand", 'NIC' => "Nicaragua", 'NER' => "Niger", 'NGA' => "Nigeria", 'NIU' => "Niue", 'NFK' => "Norfolk Island", 'MNP' => "Northern Mariana Islands", 'NOR' => "Norway", 'OMN' => "Oman", 'PAK' => "Pakistan", 'PLW' => "Palau", 'PSE' => "Palestinian Territory", 'PAN' => "Panama", 'PNG' => "Papua New Guinea", 'PRY' => "Paraguay", 'PER' => "Peru", 'PHL' => "Philippines, The", 'PCN' => "Pitcairn", 'POL' => "Poland", 'PRT' => "Portugal", 'PRI' => "Puerto Rico", 'QAT' => "Qatar", 'REU' => "Reunion", 'ROM' => "Romania", 'RUS' => "Russian Federation", 'RWA' => "Rwanda", 'KNA' => "Saint Kitts And Nevis", 'LCA' => "Saint Lucia", 'VCT' => "Saint Vincent And The Grenadines", 'WSM' => "Samoa", 'SMR' => "San Marino", 'STP' => "Sao Tome And Principe", 'SAU' => "Saudi Arabia", 'SRB' => "Serbia", 'SEN' => "Senegal", 'SYC' => "Seychelles", 'SLE' => "Sierra Leone", 'SGF' => "Singapore", 'SVK' => "Slovakia (Slovak Republic)", 'SVN' => "Slovenia", 'SLB' => "Solomon Islands", 'SOM' => "Somalia", 'ZAF' => "South Africa", 'SGS' => "South Georgia And The South Sandwich Islands", 'ESP' => "Spain", 'LKA' => "Sri Lanka", 'SHN' => "St. Helena", 'SPM' => "St. Pierre And Miquelon", 'SDN' => "Sudan", 'SRB' => "Serbia", 'SUR' => "Suriname", 'SJM' => "Svalbard And Jan Mayen Islands", 'SWZ' => "Swaziland", 'SWE' => "Sweden", 'CHE' => "Switzerland", 'SYR' => "Syrian Arab Republic", 'TWN' => "Taiwan", 'TJK' => "Tajikistan", 'TZA' => "Tanzania, United Republic Of", 'THA' => "Thailand", 'TLS' => "Timor-Leste", 'TGO' => "Togo", 'TKL' => "Tokelau", 'TON' => "Tonga", 'TTO' => "Trinidad And Tobago", 'TUN' => "Tunisia", 'TUR' => "Turkey", 'TKM' => "Turkmenistan", 'TCA' => "Turks And Caicos Islands", 'TUV' => "Tuvalu", 'UGA' => "Uganda", 'UKR' => "Ukraine", 'ARE' => "United Arab Emirates", 'GBR' => "United Kingdom", 'UMI' => "United States Minor Outlying Islands", 'URY' => "Uruguay", 'UZB' => "Uzbekistan", 'VUT' => "Vanuatu", 'VEN' => "Venezuela", 'VNM' => "Vietnam", 'VGB' => "Virgin Islands (British)", 'VIR' => "Virgin Islands (U.S.)", 'WLF' => "Wallis And Futuna Islands", 'ESH' => "Western Sahara", 'YEM' => "Yemen", 'ZMB' => "Zambia", 'ZWE' => "Zimbabwe");
@@ -65,18 +65,18 @@ class QASAddress extends Standard
       $element->newItem($value, $label);
     }
     $element->addValidator(new \Foundation\Form\Validator\NotEmpty($element));
-    
+
     $form->newButton('submit', 'Save');
     return $form;
   }
-  
+
   public function validateInput($arr){
     if($input = $this->getForm()->processInput($arr)){
       return $this->validateAddress($input);
     }
     return false;
   }
-  
+
   public function fill($answerId){
     if($answer = $this->_applicant->findAnswerById($answerId)){
       $fixedElements = array(
@@ -97,7 +97,7 @@ class QASAddress extends Standard
       $this->getForm()->setAction($this->_controller->getActionPath() . "/edit/{$answerId}");
     }
   }
-  
+
   /**
    * Create the recommenders form
    */
@@ -108,7 +108,7 @@ class QASAddress extends Standard
     foreach($types as $type){
       $elementTypes[$type->getClass()] = $type;
     };
-    
+
     $element = new \Jazzee\Entity\Element;
     $element->setType($elementTypes['\Jazzee\Element\TextInput']);
     $element->setTitle('company name, department, c/o, etc');
@@ -116,7 +116,7 @@ class QASAddress extends Standard
     $element->setFixedId(self::FID_ADDRESS3);
     $this->_applicationPage->getPage()->addElement($element);
     $em->persist($element);
-    
+
     $element = new \Jazzee\Entity\Element;
     $element->setType($elementTypes['\Jazzee\Element\TextInput']);
     $element->setTitle('Address 1');
@@ -125,7 +125,7 @@ class QASAddress extends Standard
     $element->setFixedId(self::FID_ADDRESS1);
     $this->_applicationPage->getPage()->addElement($element);
     $em->persist($element);
-    
+
     $element = new \Jazzee\Entity\Element;
     $element->setType($elementTypes['\Jazzee\Element\TextInput']);
     $element->setTitle('Address 2');
@@ -133,7 +133,7 @@ class QASAddress extends Standard
     $element->setFixedId(self::FID_ADDRESS2);
     $this->_applicationPage->getPage()->addElement($element);
     $em->persist($element);
-    
+
     $element = new \Jazzee\Entity\Element;
     $element->setType($elementTypes['\Jazzee\Element\TextInput']);
     $element->setTitle('City');
@@ -142,7 +142,7 @@ class QASAddress extends Standard
     $element->required();
     $this->_applicationPage->getPage()->addElement($element);
     $em->persist($element);
-    
+
     $element = new \Jazzee\Entity\Element;
     $element->setType($elementTypes['\Jazzee\Element\TextInput']);
     $element->setTitle('State');
@@ -150,7 +150,7 @@ class QASAddress extends Standard
     $element->setFixedId(self::FID_STATE);
     $this->_applicationPage->getPage()->addElement($element);
     $em->persist($element);
-    
+
     $element = new \Jazzee\Entity\Element;
     $element->setType($elementTypes['\Jazzee\Element\TextInput']);
     $element->setTitle('Country');
@@ -159,7 +159,7 @@ class QASAddress extends Standard
     $element->required();
     $this->_applicationPage->getPage()->addElement($element);
     $em->persist($element);
-    
+
     $element = new \Jazzee\Entity\Element;
     $element->setType($elementTypes['\Jazzee\Element\TextInput']);
     $element->setTitle('Postal Code');
@@ -168,7 +168,7 @@ class QASAddress extends Standard
     $element->required();
     $this->_applicationPage->getPage()->addElement($element);
     $em->persist($element);
-    
+
     $defaultVars = array(
       'wsdlAddress' => null,
       'validatedCountries' => ''
@@ -176,17 +176,17 @@ class QASAddress extends Standard
     foreach($defaultVars as $name=>$value){
       $var = $this->_applicationPage->getPage()->setVar($name, $value);
       $em->persist($var);
-    }    
+    }
   }
-  
+
   /**
    * Validate an address with QAS
-   * @param \Foundation\Form\Input $input 
+   * @param \Foundation\Form\Input $input
    * @return array addresses
    */
   protected function validateAddress(\Foundation\Form\Input $input){
-    
-    //Check to see if this is the second time the user has inptu this address, 
+
+    //Check to see if this is the second time the user has inptu this address,
     //if it is then just use that as the address unverified
     $sameUserInput = false;
     if($str = $input->get('originalInput')){
@@ -214,22 +214,22 @@ class QASAddress extends Standard
       $input->set('el'.$this->_applicationPage->getPage()->getElementByFixedId(self::FID_COUNTRY)->getId(), $countryName);
       return $input;
     }
-    
+
     $search = array();
-        
+
     $search[0] = $input->get('address1');
     $search[1] = $input->get('address2');
     $search[2] = $input->get('address3');
     $search[3] = $input->get('city');
     $search[4] = $input->get('state');
     $search[5] = $input->get('country');
-  
+
     # Create the QuickAddress Object and set the engine and picklist type
     $qas = new \QuickAddress($this->_applicationPage->getPage()->getVar('wsdlAddress'));
     $qas->setEngineType(QAS_VERIFICATION_ENGINE);
     $qas->setFlatten(true);
-    
-    
+
+
     #Perform the search itself
     $result = $qas->search($country, $search, QAS_DEFAULT_PROMPT, "Database layout");
     switch($result->sVerifyLevel){
@@ -258,7 +258,12 @@ class QASAddress extends Standard
         $this->getForm()->getElementByName('address2')->addMessage('Your address is incomplete');
         $this->_form->getElementByName('submit')->setValue('Confirm Address as Entered');
         $this->_form->newHiddenElement('originalInput', base64_encode(serialize($input)));
-        break;
+          break;
+      case 'InteractionRequired':
+        $this->_controller->addMessage('error', 'We were unable to validate your address.');
+        $this->_form->getElementByName('submit')->setValue('Confirm Address as Entered');
+        $this->_form->newHiddenElement('originalInput', base64_encode(serialize($input)));
+          break;
       case 'None':
         $this->_controller->addMessage('error', 'We were unable to validate your address.');
         $this->_form->getElementByName('submit')->setValue('Confirm Address as Entered');
@@ -269,7 +274,7 @@ class QASAddress extends Standard
     }
     return false;
   }
-  
+
   /**
    * Format an address
    * @todo: This maybe can be done with QAS, for now its just manual
@@ -278,8 +283,8 @@ class QASAddress extends Standard
    */
   public function formatAddress(\Jazzee\Entity\Answer $answer){
     $lines = array();
-    
-    
+
+
     $lines[] = $this->_applicationPage->getPage()->getElementByFixedId(self::FID_ADDRESS3)->getJazzeeElement()->displayValue($answer);
     $lines[] = $this->_applicationPage->getPage()->getElementByFixedId(self::FID_ADDRESS1)->getJazzeeElement()->displayValue($answer);
     $lines[] = $this->_applicationPage->getPage()->getElementByFixedId(self::FID_ADDRESS2)->getJazzeeElement()->displayValue($answer);
@@ -287,10 +292,10 @@ class QASAddress extends Standard
                . $this->_applicationPage->getPage()->getElementByFixedId(self::FID_STATE)->getJazzeeElement()->displayValue($answer) . ' '
                . $this->_applicationPage->getPage()->getElementByFixedId(self::FID_POSTALCODE)->getJazzeeElement()->displayValue($answer);
     $lines[] = $this->_applicationPage->getPage()->getElementByFixedId(self::FID_COUNTRY)->getJazzeeElement()->displayValue($answer);
-    
+
     return $lines;
   }
-  
+
   /**
    * Pick an address from a list
    * @param integer $answerId If set we are updating an existing answer
@@ -318,11 +323,11 @@ class QASAddress extends Standard
       $this->newAnswer($input);
     }
   }
-  
+
   public static function applyPageElement(){
     return 'QASAddress-apply_page';
   }
-  
+
   public static function pageBuilderScriptPath(){
     return 'resource/scripts/page_types/JazzeePageQASAddress.js';
   }
