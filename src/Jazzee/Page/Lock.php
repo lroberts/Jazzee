@@ -2,85 +2,100 @@
 namespace Jazzee\Page;
 /**
  * Test the application for completness and lock it
- * 
+ *
  * @author Jon Johnson <jon.johnson@ucsf.edu>
  * @license http://jazzee.org/license.txt
  * @package jazzee
  * @subpackage pages
  */
 class Lock implements \Jazzee\Interfaces\Page, \Jazzee\Interfaces\FormPage {
-  
+
  /**
   * The ApplicationPage Entity
   * @var \Jazzee\Entity\ApplicationPage
   */
   protected $_applicationPage;
-    
+
   /**
    * Our controller
    * @var \Jazzee\Controller
    */
   protected $_controller;
-  
+
   /**
    * The Applicant
    * @var \Jazzee\Entity\Applicant
    */
   protected $_applicant;
-  
- /**
-  * Contructor
-  * 
-  * @param \Jazzee\Entity\ApplicationPage $applicationPage
-  */
-  public function __construct(\Jazzee\Entity\ApplicationPage $applicationPage){
+
+  /**
+   * The form
+   * @var \Foundation\Form
+   */
+  protected $_form;
+
+  /**
+   * Contructor
+   *
+   * @param \Jazzee\Entity\ApplicationPage $applicationPage
+   */
+  public function __construct(\Jazzee\Entity\ApplicationPage $applicationPage)
+  {
     $this->_applicationPage = $applicationPage;
   }
-  
+
   /**
-   * 
+   *
    * @see Jazzee.Page::setController()
    */
   public function setController(\Jazzee\Controller $controller){
     $this->_controller = $controller;
   }
-  
+
   /**
-   * 
+   *
    * @see Jazzee.Page::setApplicant()
    */
   public function setApplicant(\Jazzee\Entity\Applicant $applicant){
     $this->_applicant = $applicant;
   }
-  
-  public function getForm(){
-    $form = new \Foundation\Form;
-    $form->setCSRFToken($this->_controller->getCSRFToken());
-    $form->setAction($this->_controller->getActionPath());
-    $field = $form->newField();
-    $field->setLegend($this->_applicationPage->getTitle());
-    $field->setInstructions($this->_applicationPage->getInstructions());
-    
-    $element = $field->newElement('RadioList', 'lock');
-    $element->setLabel('Do you wish to lock your application?');
-    $element->newItem(0,'No');
-    $element->newItem(1,'Yes');
-    
-    $element->addValidator(new \Foundation\Form\Validator\NotEmpty($element));
-    
-    $form->newButton('submit','Submit Application');
-    return $form;
+
+  public function getForm()
+  {
+    if (is_null($this->_form)) {
+      $this->_form = new \Foundation\Form;
+      $this->_form->setCSRFToken($this->_controller->getCSRFToken());
+      $this->_form->setAction($this->_controller->getActionPath());
+      $field = $this->_form->newField();
+      $field->setLegend($this->_applicationPage->getTitle());
+      $field->setInstructions($this->_applicationPage->getInstructions());
+
+      $element = $field->newElement('RadioList', 'lock');
+      $element->setLabel('Do you wish to lock your application?');
+      $element->newItem(0, 'No');
+      $element->newItem(1, 'Yes');
+
+      $element->addValidator(new \Foundation\Form\Validator\NotEmpty($element));
+
+      $this->_form->newButton('submit', 'Submit Application');
+    }
+
+    return $this->_form;
   }
-  
+
   /**
    * Test each page to see if it is complete
    * @param FormInput $input
    * @return bool
    */
-  public function validateInput($input){
-    if(!$input = $this->getForm()->processInput($input)) return false;
-    if(!$input->get('lock')){
-      $this->_form->getElementByName('lock')->addMessage('You must answer yes to submit your application.');
+  public function validateInput($input)
+  {
+    if (!$input = $this->getForm()->processInput($input)) {
+      return false;
+    }
+    if (!$input->get('lock')) {
+      $this->getForm()->getElementByName('lock')->addMessage('You must answer yes to submit your application.');
+
       return false;
     }
     $error = false;
@@ -94,34 +109,34 @@ class Lock implements \Jazzee\Interfaces\Page, \Jazzee\Interfaces\FormPage {
     }
     return !$error;
   }
-  
+
   public function newAnswer($input){
     $this->_applicant->lock();
     $this->_controller->getEntityManager()->persist($this->_applicant);
     $this->_controller->addMessage('success', 'Your application has been submitted.');
     $this->_controller->redirectUrl($this->_controller->getActionPath());
-    
+
   }
-  
+
   /**
    * Lock Doesn't update answers
    * @param type $input
    * @param type $answerId
-   * @return boolean 
+   * @return boolean
    */
   public function updateAnswer($input, $answerId){
     return false;
   }
-  
+
   /**
    * Lock Doesn't delete answers
    * @param type $answerId
-   * @return boolean 
+   * @return boolean
    */
   public function deleteAnswer($answerId){
     return false;
   }
-  
+
   public function fill($answerId){
     if($answer = $this->_applicant->findAnswerById($answerId)){
       foreach($this->_applicationPage->getPage()->getElements() as $element){
@@ -132,7 +147,7 @@ class Lock implements \Jazzee\Interfaces\Page, \Jazzee\Interfaces\FormPage {
       $this->getForm()->setAction($this->_controller->getActionPath() . "/edit/{$answerId}");
     }
   }
-  
+
   /**
    * No Special setup
    * @return null
@@ -140,15 +155,16 @@ class Lock implements \Jazzee\Interfaces\Page, \Jazzee\Interfaces\FormPage {
   public function setupNewPage(){
     return;
   }
-  
-  public static function applyPageElement(){
-    return 'Standard-apply_page';
+
+  public static function applyPageElement()
+  {
+    return 'Lock-apply_page';
   }
-  
+
   public static function pageBuilderScriptPath(){
     return 'resource/scripts/page_types/JazzeePageLock.js';
   }
-  
+
   /**
    * Lock Pages are always incomplete
    */
@@ -156,16 +172,16 @@ class Lock implements \Jazzee\Interfaces\Page, \Jazzee\Interfaces\FormPage {
     if($this->_applicant->isLocked()) return self::COMPLETE;
     return self::INCOMPLETE;
   }
-  
+
   /**
    * By default just set the varialbe dont check it
    * @param string $name
-   * @param string $value 
+   * @param string $value
    */
   public function setVar($name, $value){
     $var = $this->_applicationPage->getPage()->setVar($name, $value);
     $this->_controller->getEntityManager()->persist($var);
   }
-  
+
 }
 ?>
