@@ -13,6 +13,8 @@ function Grid(display, applicantIds, target, controllerPath){
   this.controllerPath = controllerPath;
   this.maxLoad = 100;
   this.lastClick = null;
+  this.services = new Services;
+
 };
 
 Grid.prototype.init = function(){
@@ -31,6 +33,9 @@ Grid.prototype.init = function(){
   }else{//Opera, etc.
     table.mousedown(function(){return false;});
   }
+
+  var pdfTemplates = this.services.getCurrentApplication().listTemplates();
+  console.log("have templates? "+pdfTemplates);
   $(this.target).append(table);
   var grid = table.dataTable( {
     sScrollY: "500",
@@ -63,6 +68,12 @@ Grid.prototype.init = function(){
       "aButtons": [
         "select_all",
         "select_none",
+  {
+                      "sExtends": "show_templates",
+                      "sButtonText": "Templates",
+		      "pdfTemplates": pdfTemplates,
+                      "sUrl": "grid/"
+                  },
         {
           "sExtends":    "collection",
           "sButtonText": "Download",
@@ -373,6 +384,92 @@ sButtonClass:"DTTT_button_collection",sButtonText:"Collection",fnClick:function(
 "TableTools";TableTools.VERSION="2.1.5";TableTools.prototype.VERSION=TableTools.VERSION;"function"==typeof e.fn.dataTable&&"function"==typeof e.fn.dataTableExt.fnVersionCheck&&e.fn.dataTableExt.fnVersionCheck("1.9.0")?e.fn.dataTableExt.aoFeatures.push({fnInit:function(a){a=new TableTools(a.oInstance,"undefined"!=typeof a.oInit.oTableTools?a.oInit.oTableTools:{});TableTools._aInstances.push(a);return a.dom.container},cFeature:"T",sFeature:"TableTools"}):alert("Warning: TableTools 2 requires DataTables 1.9.0 or newer - www.datatables.net/download");
 e.fn.DataTable.TableTools=TableTools})(jQuery,window,document);
 
+
+
+TableTools.BUTTONS.show_templates = {
+    "sAction": "text",
+    "sTag": "default",
+    "sFieldBoundary": "",
+    "sFieldSeperator": "\t",
+    "sNewLine": "<br>",
+    "sToolTip": "",
+    "sButtonClass": "DTTT_button_text",
+    "sButtonClassHover": "DTTT_button_text_hover",
+    "sButtonText": "Email",
+    "mColumns": "all",
+    "bHeader": true,
+    "bFooter": true,
+    "sDiv": "",
+    "fnMouseover": null,
+    "fnMouseout": null,
+    "fnClick": function( nButton, oConfig ) { 
+        var tableTools = this;
+        var overlay = $('<div>').attr('id', 'emailoverlay');
+        $('body').append(overlay);
+        overlay.dialog({
+		height: 390,
+		    modal: true,
+		    autoOpen: true,
+		    open: function(event, ui){
+		    //$(".ui-dialog-titlebar", ui.dialog).hide();
+
+		    var form = $('<form>');
+		    form.attr( 'method', 'post' );
+		    overlay.append(form);
+
+		    var toList = $('<div>').addClass('recipients');
+		    form.append(toList);
+
+		    toList.append($('<span>').addClass('label').addClass('to').html("To:"));
+		    var applicantIds = [];
+
+		    for(var i = 0; i < pdfTemplates.length; i++){
+			applicantIds.push(pdfTempaltes[i]);
+			toList.append($('<span>').addClass('recipient').html(""+pdfTemplates[i]));
+			var debug = "";
+			for(x in pdfTemplates){
+			    debug += x+" => "+pdfTemplates[x]+"\n";
+			}
+			console.log("template: "+debug);
+		    }
+
+		    var subject = $('<div>'); 
+		    form.append(subject);
+		    subject.append($('<span>').addClass('label').html('Subject').css('display', 'inline-block'));
+		    subject.append($('<input>').attr('name', 'subject').attr('type', 'text').val(""));
+		    form.append($('<input>').attr('name', 'applicantIds').attr('type', 'hidden').val(applicantIds));
+
+		    var body = $('<div>');
+		    form.append(body);
+		    body.append($('<span>').addClass('label').html('Body').css('display', 'inline-block'));
+		    body.append($('<textarea>').attr('name', 'body').val(""));
+
+		    body.append($('<input>').attr('type','submit').attr('value','Send'));
+
+		    form.attr( 'action', oConfig.sUrl );
+		    form.bind('submit', function(){
+			    $.ajax({
+				    type: form.attr('method'),
+					url: form.attr('action'),
+					data: form.serialize()
+					}).done(function() {
+						$('#emailoverlay').dialog('destroy').remove();
+						alert("Messages sent successfully");       
+					    }).fail(function() {
+
+						    $('#emailoverlay').dialog('destroy').remove();
+						    alert("Failed to send messages");       
+						});
+			    event.preventDefault(); 
+			    return false;
+			});
+		}
+	    });
+    },
+    "fnSelect": null,
+    "fnComplete": null,
+    "fnInit": null
+};
 
 /**
 * Table tools button plugin to create downloads from applicant data
