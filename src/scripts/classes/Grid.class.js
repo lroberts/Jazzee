@@ -470,6 +470,7 @@ TableTools.BUTTONS.send_messages = {
     "fnMouseover": null,
     "fnMouseout": null,
     "fnClick": function( nButton, oConfig ) { 
+<<<<<<< HEAD
       var tableTools = this;
       var dialog = $('<div>');
       var obj = new FormObject();

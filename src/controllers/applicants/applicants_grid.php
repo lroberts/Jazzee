@@ -88,6 +88,7 @@ class ApplicantsGridController extends \Jazzee\AdminController
   public function actionSendMessage()  
   {
     $applicants = explode(',',$this->post['applicantIds']);
+
     foreach ($applicants as $id) {
       $thread = new \Jazzee\Entity\Thread();
       $thread->setSubject($this->post['subject']);
