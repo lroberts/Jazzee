@@ -68,37 +68,11 @@ Grid.prototype.init = function(){
       "aButtons": [
         "select_all",
         "select_none",
-  {
-                      "sExtends": "show_templates",
-                      "sButtonText": "Templates",
-		      "pdfTemplates": pdfTemplates,
-                      "sUrl": "grid/"
-                  },
         {
-          "sExtends":    "collection",
+          "sExtends": "download_with_options",
           "sButtonText": "Download",
-          "aButtons":    [	
-            {
-                "sExtends": "download_applicants",
-                "sButtonText": "Excel",
-                "sUrl": "grid/downloadXls"
-            },
-            {
-                "sExtends": "download_applicants",
-                "sButtonText": "XML",
-                "sUrl": "grid/downloadXml"
-            },
-            {
-                "sExtends": "download_applicants",
-                "sButtonText": "PDF",
-                "sUrl": "grid/downloadPdfArchive"
-            },
-            {
-                "sExtends": "download_applicants",
-                "sButtonText": "JSON",
-                "sUrl": "grid/downloadJson"
-            }
-          ]
+	  "pdfTemplates": pdfTemplates,
+	  "sUrl": "grid/downloadPdfArchive"
         }
       ]
     }
@@ -386,7 +360,7 @@ e.fn.DataTable.TableTools=TableTools})(jQuery,window,document);
 
 
 
-TableTools.BUTTONS.show_templates = {
+TableTools.BUTTONS.download_with_options = {
     "sAction": "text",
     "sTag": "default",
     "sFieldBoundary": "",
@@ -395,7 +369,7 @@ TableTools.BUTTONS.show_templates = {
     "sToolTip": "",
     "sButtonClass": "DTTT_button_text",
     "sButtonClassHover": "DTTT_button_text_hover",
-    "sButtonText": "Email",
+    "sButtonText": "Download",
     "mColumns": "all",
     "bHeader": true,
     "bFooter": true,
@@ -404,67 +378,103 @@ TableTools.BUTTONS.show_templates = {
     "fnMouseout": null,
     "fnClick": function( nButton, oConfig ) { 
         var tableTools = this;
-        var overlay = $('<div>').attr('id', 'emailoverlay');
+        var overlay = $('<div>').attr('id', 'downloadoverlay');
         $('body').append(overlay);
         overlay.dialog({
 		height: 390,
 		    modal: true,
 		    autoOpen: true,
 		    open: function(event, ui){
-		    //$(".ui-dialog-titlebar", ui.dialog).hide();
+		    var obj = new FormObject();
+		    var field = obj.newField({name: 'legend', value: 'Choose PDF Template'});
 
-		    var form = $('<form>');
-		    form.attr( 'method', 'post' );
-		    overlay.append(form);
+		    var type = field.newElement('RadioList', 'type');
+		    type.label = 'Download Type';
+		    type.required = true;
+		    type.addItem("Excel", "grid/downloadXls");
+		    type.addItem("XML", "grid/downloadXml");
+		    type.addItem("PDF", "grid/downloadPdfArchive");
+		    type.addItem("JSON", "grid/downloadJson");
 
-		    var toList = $('<div>').addClass('recipients');
-		    form.append(toList);
-
-		    toList.append($('<span>').addClass('label').addClass('to').html("To:"));
-		    var applicantIds = [];
-
-		    for(var i = 0; i < pdfTemplates.length; i++){
-			applicantIds.push(pdfTempaltes[i]);
-			toList.append($('<span>').addClass('recipient').html(""+pdfTemplates[i]));
-			var debug = "";
-			for(x in pdfTemplates){
-			    debug += x+" => "+pdfTemplates[x]+"\n";
-			}
-			console.log("template: "+debug);
+		    var template = field.newElement('SelectList', 'pdftemplate');
+		    template.name = "pdftemplate";
+		    template.label = 'PDF Template';
+		    template.addItem("--", "");
+		    for(var i = 0; i < oConfig.pdfTemplates.length; i++){
+			template.addItem(oConfig.pdfTemplates[i]["title"], oConfig.pdfTemplates[i]["id"])
 		    }
 
-		    var subject = $('<div>'); 
-		    form.append(subject);
-		    subject.append($('<span>').addClass('label').html('Subject').css('display', 'inline-block'));
-		    subject.append($('<input>').attr('name', 'subject').attr('type', 'text').val(""));
-		    form.append($('<input>').attr('name', 'applicantIds').attr('type', 'hidden').val(applicantIds));
+		    var formObject = new Form().create(obj);
+		    var form = $('form',formObject);
+                    form.attr( 'method', 'post' );
+		    form.append($('<button type="submit" name="submit">').html('Download').button({
+				icons: {
+				    primary: 'ui-icon-disk'
+					}
+			    }));
 
-		    var body = $('<div>');
-		    form.append(body);
-		    body.append($('<span>').addClass('label').html('Body').css('display', 'inline-block'));
-		    body.append($('<textarea>').attr('name', 'body').val(""));
+            var iFrameName = "iFrame" + (new Date().getTime());
+            var iFrame = $("<iframe name='" + iFrameName + "' src='about:blank' />").insertAfter('body');
+            iFrame.css("display", "none");
 
-		    body.append($('<input>').attr('type','submit').attr('value','Send'));
+            var form2 = $('<form>');
+            form2.attr( 'method', 'post' );
+            iFrame.append(form2);
 
-		    form.attr( 'action', oConfig.sUrl );
+		    var applicantIds = [];
+		    var selected = tableTools.fnGetSelectedData();
+		    for(var i = 0; i < selected.length; i++){
+			applicantIds.push(selected[i].id);
+		    }		    
+		    form2.append($('<input>').attr('name', 'applicantIds').attr('type', 'hidden').val(applicantIds));
+		    form2.attr( 'action', oConfig.sUrl );
+
 		    form.bind('submit', function(){
-			    $.ajax({
-				    type: form.attr('method'),
-					url: form.attr('action'),
-					data: form.serialize()
-					}).done(function() {
-						$('#emailoverlay').dialog('destroy').remove();
-						alert("Messages sent successfully");       
-					    }).fail(function() {
+                       form2.submit();
+		       event.preventDefault(); 
+		       return false;
 
-						    $('#emailoverlay').dialog('destroy').remove();
-						    alert("Failed to send messages");       
-						});
-			    event.preventDefault(); 
-			    return false;
-			});
-		}
-	    });
+                 });
+
+     form2.bind('submit', function(){
+        // BUG: foundation does not seem to add the name to the select element
+	// var template = $('select[name="pdftemplate"]',overlay).val();
+        var template = $('select',overlay).val();
+        var dlType = $('input[name="type"]:radio:checked', overlay).val();
+        if(template && (dlType == "grid/downloadPdfArchive")){
+	  form2.append($('<input>').attr('name', 'pdftemplate').attr('type', 'hidden').val(template));
+	  form2.attr( 'action', "grid/downloadPdfTemplateArchive" );
+        }else{
+	  form2.attr( 'action', dlType );
+        }
+        $(".ui-dialog-titlebar", ui.dialog).hide();
+
+        var label = $('<div>').addClass('label').html('Downloading...').css('float', 'left').css('margin','10px 5px');
+        var progressbar = $('<div>').addClass('progress').append(label);
+        overlay.append(progressbar);
+        progressbar.progressbar({
+           value: false
+        });
+
+	var cookieName = 'fileDownload';
+	var check = function(){
+        if($.cookie(cookieName) == 'complete'){
+	    $.cookie(cookieName, 'false', {expires: 1, path: '/' });
+	    $('#downloadoverlay').dialog('destroy').remove();
+	    iFrame.remove();
+	} else {
+	    setTimeout(check, 500);
+	}
+      };
+      setTimeout(check, 500);
+      return true;
+    });
+	
+    overlay.append(form);
+    event.preventDefault(); 
+    return false;
+  }
+});
     },
     "fnSelect": null,
     "fnComplete": null,
